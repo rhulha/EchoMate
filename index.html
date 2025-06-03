@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Speech using Moonshine and Kokoro</title>
+    <link id="favicon" rel="icon" href="./img/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/conversation.css">
+    <link rel="stylesheet" href="./css/tabs.css">
+</head>
+
+<body>
+    <h1>Speech to Speech using Moonshine and Kokoro</h1>
+
+    <div class="tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="conversation">Conversation</button>
+            <button class="tab-button" data-tab="settings">Settings</button>
+            <button class="tab-button" data-tab="credits">Credits</button>
+        </div>
+
+        <div id="conversation" class="tab-content active">
+            <div class="container">
+                <div class="recorder-container">
+                    <h2>Record Your Voice</h2>
+                </div>
+
+                <div class="transcription-container">
+                    <h2>Transcription</h2>
+                    <div class="status" id="transcriptionStatus">No transcription available</div>
+                    <div id="transcriptionResult"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="settings" class="tab-content">
+            <div class="settings-container">
+                <div class="setting-group">
+                    <label class="setting-label" for="serverUrl">Chat Inference Server URL:</label>
+                    <input type="text" id="serverUrl" class="setting-input"
+                        value="http://localhost:8080/v1/chat/completions">
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label" for="systemPrompt">System Prompt:</label>
+                    <textarea id="systemPrompt" class="setting-input">You are a helpful AI agent.</textarea>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label" for="voiceSelect">Voice:</label>
+                    <input id="voiceSelect" type="text" class="setting-input" value="af_heart" list="availableVoices">
+                    <datalist id="availableVoices">
+                        <option value="af_heart">af_heart</option>
+                        <option value="af_alloy">af_alloy</option>
+                        <option value="af_aoede">af_aoede</option>
+                        <option value="af_bella">af_bella</option>
+                        <option value="am_adam">am_adam</option>
+                        <option value="am_echo">am_echo</option>
+                </div>
+            </div>
+        </div>
+        <div id="credits" class="tab-content">
+            <div class="credits-container">
+                <h2>Credits</h2>
+                <p>This project uses the following open source projects:</p>
+                <div class="credit-item">
+                    <h3>Speech2SpeechVAD</h3>
+                    <p>Main project source code repository</p>
+                    <a href="https://github.com/rhulha/Speech2SpeechVAD" target="_blank">https://github.com/rhulha/Speech2SpeechVAD</a>
+                </div>
+                <div class="credit-item">
+                    <h3>Silero-VAD</h3>
+                    <p>Voice activity detection model</p>
+                    <a href="https://github.com/snakers4/silero-vad" target="_blank">https://github.com/snakers4/silero-vad</a><br/>
+                    <a href="https://github.com/ricky0123/vad" target="_blank">Voice activity detector (VAD) for the browser by ricky0123</a>
+                </div>
+                <div class="credit-item">
+                    <h3>Moonshine</h3>
+                    <p>Speech recognition model by Useful Sensors</p>
+                    <a href="https://github.com/usefulsensors/moonshine" target="_blank">https://github.com/usefulsensors/moonshine</a>
+                </div>
+                <div class="credit-item">
+                    <h3>Kokoro</h3>
+                    <p>Text-to-speech synthesis engine</p>
+                    <a href="https://github.com/hexgrad/kokoro" target="_blank">https://github.com/hexgrad/kokoro</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/main.js" type="module"></script>
+</body>
+
+</html>
