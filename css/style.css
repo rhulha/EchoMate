@@ -166,3 +166,66 @@ textarea {
     font-family: inherit;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
+
+.ready-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    margin: 20px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ready-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ready-button:disabled {
+    background-color: #4a4a4a;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.file-input {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.file-input:hover {
+    border-color: #7289DA;
+}
+
+.file-input:focus {
+    outline: none;
+    border-color: #7289DA;
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
+}
+
+.file-info {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.file-info.loaded {
+    color: #4CAF50;
+}
+
+.file-info.error {
+    color: #f44336;
+}

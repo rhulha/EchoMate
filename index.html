@@ -16,15 +16,16 @@
 
     <div class="tabs">
         <div class="tab-buttons">
-            <button class="tab-button active" data-tab="conversation">Conversation</button>
-            <button class="tab-button" data-tab="settings">Settings</button>
+            <button class="tab-button" data-tab="conversation">Conversation</button>
+            <button class="tab-button active" data-tab="settings">Settings</button>
             <button class="tab-button" data-tab="credits">Credits</button>
         </div>
 
-        <div id="conversation" class="tab-content active">
+        <div id="conversation" class="tab-content">
             <div class="container">
                 <div class="recorder-container">
                     <h2>Record Your Voice</h2>
+                    <p>Speak into your microphone. The system will automatically detect when you start and stop speaking.</p>
                 </div>
 
                 <div class="transcription-container">
@@ -36,13 +37,22 @@
             </div>
         </div>
 
-        <div id="settings" class="tab-content">
+        <div id="settings" class="tab-content active">
             <div class="settings-container">
+                <h2>Settings</h2>
+                <p>Configure your speech-to-speech settings below, then click "Ready to Start" when you're ready to begin the conversation.</p>
+                
                 <div class="setting-group">
                     <label class="setting-label" for="serverUrl">Chat Inference Server URL:</label>
                     <input type="text" id="serverUrl" class="setting-input"
                         value="http://localhost:8080/v1/chat/completions">
                 </div>
+                <div class="setting-group">
+                    <label class="setting-label" for="characterCard">AI Character Card (v2):</label>
+                    <input type="file" id="characterCard" class="setting-input file-input" accept=".json,.png" title="Upload a character card JSON file or PNG with embedded data">
+                    <div class="file-info" id="characterInfo">No character card loaded</div>
+                </div>
+
                 <div class="setting-group">
                     <label class="setting-label" for="systemPrompt">System Prompt:</label>
                     <textarea id="systemPrompt" class="setting-input">You are a helpful AI agent.</textarea>
@@ -50,14 +60,19 @@
 
                 <div class="setting-group">
                     <label class="setting-label" for="voiceSelect">Voice:</label>
-                    <input id="voiceSelect" type="text" class="setting-input" value="af_heart" list="availableVoices">
+                    <input id="voiceSelect" type="text" class="setting-input" value="af_nicole" list="availableVoices">
                     <datalist id="availableVoices">
                         <option value="af_heart">af_heart</option>
                         <option value="af_alloy">af_alloy</option>
                         <option value="af_aoede">af_aoede</option>
                         <option value="af_bella">af_bella</option>
+                        <option value="af_bella">af_nicole</option>
                         <option value="am_adam">am_adam</option>
                         <option value="am_echo">am_echo</option>
+                </div>
+                
+                <div class="setting-group">
+                    <button id="readyButton" class="ready-button" disabled>Ready to Start</button>
                 </div>
             </div>
         </div>
