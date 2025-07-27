@@ -27,6 +27,10 @@ export class CharacterCardHandler {
         
         if (!file) {
             $infoDiv.text("No character card loaded").removeClass('loaded error');
+            // Call the callback with null to indicate no character loaded
+            if (this.onCharacterLoaded) {
+                this.onCharacterLoaded(null);
+            }
             return;
         }
         
@@ -55,11 +59,18 @@ export class CharacterCardHandler {
                 
                 if (characterData) {
                     this.applyCharacterCard(characterData);
-                    $infoDiv.text(`Loaded: ${characterData.name || 'Unknown Character'}`).addClass('loaded');
+                    
+                    // Handle Character Card v2 format for display
+                    let data = characterData;
+                    if (characterData.spec === 'chara_card_v2' && characterData.data) {
+                        data = characterData.data;
+                    }
+                    
+                    $infoDiv.text(`Loaded: ${data.name || 'Unknown Character'}`).addClass('loaded');
                     
                     // Call the callback if provided
                     if (this.onCharacterLoaded) {
-                        this.onCharacterLoaded(characterData);
+                        this.onCharacterLoaded(data);
                     }
                 }
                 
@@ -102,19 +113,25 @@ export class CharacterCardHandler {
     }
 
     applyCharacterCard(characterData) {
-        const systemPrompt = characterData.system_prompt || characterData.description;
+        // Handle Character Card v2 format (data is nested under 'data' property)
+        let data = characterData;
+        if (characterData.spec === 'chara_card_v2' && characterData.data) {
+            data = characterData.data;
+        }
+        
+        const systemPrompt = data.system_prompt || data.description;
         if (systemPrompt) {
             $('#systemPrompt').val(systemPrompt);
         }
         
-        if (characterData.name) {
-            console.log(`Loaded character: ${characterData.name}`);
+        if (data.name) {
+            console.log(`Loaded character: ${data.name}`);
         }
 
         return {
-            name: characterData.name,
+            name: data.name,
             systemPrompt: systemPrompt,
-            characterData: characterData
+            characterData: data
         };
     }
 
@@ -128,9 +145,15 @@ export class CharacterCardHandler {
             return false;
         }
 
+        // Handle Character Card v2 format
+        let data = characterData;
+        if (characterData.spec === 'chara_card_v2' && characterData.data) {
+            data = characterData.data;
+        }
+
         // Check for required fields (at least one should exist)
-        const hasName = characterData.name;
-        const hasPrompt = characterData.system_prompt || characterData.description;
+        const hasName = data.name;
+        const hasPrompt = data.system_prompt || data.description;
         
         return hasName || hasPrompt;
     }

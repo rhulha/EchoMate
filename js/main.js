@@ -45,13 +45,83 @@ function setupEventHandlers() {
 
 function initializeCharacterCardHandler() {
     characterCardHandler.init((characterData) => {
-        // Update conversation history when character is loaded
-        const systemPrompt = characterData.system_prompt || characterData.description;
-        if (systemPrompt) {
-            conversationHistory[0].content = systemPrompt;
+        if (characterData) {
+            // Update conversation history when character is loaded
+            const systemPrompt = characterData.system_prompt || characterData.description;
+            if (systemPrompt) {
+                conversationHistory[0].content = systemPrompt;
+            }
+            
+            // Display character avatar and name on conversation tab
+            displayCharacterInfo(characterData);
+            
+            console.log('Character card applied to conversation history');
+        } else {
+            // Clear character info when no character card is loaded
+            clearCharacterInfo();
+            // Reset system prompt to default
+            conversationHistory[0].content = "You are a helpful assistant.";
+            console.log('Character card cleared');
         }
-        console.log('Character card applied to conversation history');
     });
+}
+
+function displayCharacterInfo(characterData) {
+    const $characterInfo = $('#conversationCharacterInfo');
+    const $characterAvatar = $('#characterAvatar');
+    const $characterName = $('#characterName');
+    
+    // Clear previous content
+    $characterAvatar.attr('src', '').off('error load');
+    $characterName.text('');
+    
+    // Display character name if available
+    if (characterData.name) {
+        $characterName.text(characterData.name);
+    }
+    
+    // Display character avatar if available
+    if (characterData.avatar) {
+        $characterAvatar.attr('src', characterData.avatar);
+        $characterAvatar.on('error', function() {
+            // Hide the avatar if the image fails to load, but keep the character info if we have a name
+            $(this).hide();
+            if (!characterData.name) {
+                $characterInfo.hide();
+            }
+        });
+        $characterAvatar.on('load', function() {
+            // Show the avatar and character info when the image loads successfully
+            $(this).show();
+            $characterInfo.show();
+        });
+        
+        // Handle case where image is already cached and loads immediately
+        if ($characterAvatar[0].complete) {
+            $characterAvatar.show();
+            $characterInfo.show();
+        }
+    } else {
+        // Hide avatar if no avatar URL
+        $characterAvatar.hide();
+    }
+    
+    // Show character info if we have a name or avatar
+    if (characterData.name || characterData.avatar) {
+        $characterInfo.show();
+    } else {
+        $characterInfo.hide();
+    }
+}
+
+function clearCharacterInfo() {
+    const $characterInfo = $('#conversationCharacterInfo');
+    const $characterAvatar = $('#characterAvatar');
+    const $characterName = $('#characterName');
+    
+    $characterAvatar.attr('src', '').off('error load');
+    $characterName.text('');
+    $characterInfo.hide();
 }
 
 function switchToConversationTab() {

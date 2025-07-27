@@ -24,6 +24,13 @@
 
         <div id="conversation" class="tab-content">
             <div class="container">
+                <div class="character-info" id="conversationCharacterInfo" style="display: none;">
+                    <img id="characterAvatar" class="character-avatar" alt="Character Avatar">
+                    <div class="character-details">
+                        <h3 id="characterName"></h3>
+                    </div>
+                </div>
+                
                 <div class="recorder-container">
                     <h2>Record Your Voice</h2>
                     <p>Speak into your microphone. The system will automatically detect when you start and stop speaking.</p>
@@ -61,7 +68,7 @@
 
                 <div class="setting-group">
                     <label class="setting-label" for="voiceSelect">Voice:</label>
-                    <input id="voiceSelect" type="text" class="setting-input" value="af_nicole" list="availableVoices">
+                    <input id="voiceSelect" type="text" class="setting-input" value="af_heart" list="availableVoices">
                     <datalist id="availableVoices">
                         <option value="af_heart">af_heart</option>
                         <option value="af_alloy">af_alloy</option>
