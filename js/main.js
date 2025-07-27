@@ -3,6 +3,10 @@ import { MicVAD, utils } from "./vad.js"
 import { textToSpeech } from "./tts.js";
 import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
 
+let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
+let myvad = null;
+let isReady = false;
+
 async function detectWebGPU() {
     try {
         const adapter = await navigator.gpu.requestAdapter();
@@ -12,57 +16,59 @@ async function detectWebGPU() {
     }
 }
 
-let conversationHistory = [
-    {
-        role: "system",
-        content: "You are a helpful assistant."
-    }
-];
-
-let myvad = null;
-let isReady = false;
-
-document.getElementById('systemPrompt').addEventListener('change', function (event) {
-    const systemPrompt = event.target.value;
-    if (systemPrompt) {
-        conversationHistory[0].content = systemPrompt;
-    } else {
-        conversationHistory[0].content = "You are a helpful assistant.";
-    }
+// jQuery Document Ready
+$(document).ready(async function() {
+    await main();
+    setupEventHandlers();
+    setupTabNavigation();
 });
 
-document.getElementById('characterCard').addEventListener('change', function(event) {
+function setupEventHandlers() {
+    // System prompt change
+    $('#systemPrompt').on('change', function() {
+        conversationHistory[0].content = $(this).val() || "You are a helpful assistant.";
+    });
+
+    // Ready button click
+    $('#readyButton').on('click', function() {
+        if (!isReady && myvad) {
+            isReady = true;
+            $(this).prop('disabled', true).text('Starting...');
+            switchToConversationTab();
+            myvad.start();
+            $(this).text('Recording Active');
+        }
+    });
+
+    // Character card upload
+    $('#characterCard').on('change', handleCharacterCardUpload);
+}
+
+function handleCharacterCardUpload(event) {
     const file = event.target.files[0];
-    const infoDiv = document.getElementById('characterInfo');
+    const $infoDiv = $('#characterInfo');
     
     if (!file) {
-        infoDiv.textContent = "No character card loaded";
-        infoDiv.className = "file-info";
+        $infoDiv.text("No character card loaded").removeClass('loaded error');
         return;
     }
     
-    infoDiv.textContent = "Loading character card...";
-    infoDiv.className = "file-info";
+    $infoDiv.text("Loading character card...").removeClass('loaded error');
     
     const reader = new FileReader();
-    
     reader.onload = function(e) {
         try {
             let characterData = null;
             
             if (file.type === 'application/json' || file.name.endsWith('.json')) {
-                // Handle JSON file
                 characterData = JSON.parse(e.target.result);
             } else if (file.type.startsWith('image/') || file.name.endsWith('.png')) {
-                // Handle PNG with embedded data
                 const base64Data = e.target.result.split(',')[1];
                 const binaryData = atob(base64Data);
-                
-                // Look for character card data in PNG tEXt chunks
                 const textChunks = extractTextChunksFromPNG(binaryData);
+                
                 if (textChunks.chara) {
-                    const decodedData = atob(textChunks.chara);
-                    characterData = JSON.parse(decodedData);
+                    characterData = JSON.parse(atob(textChunks.chara));
                 } else {
                     throw new Error("No character data found in PNG file");
                 }
@@ -70,30 +76,23 @@ document.getElementById('characterCard').addEventListener('change', function(eve
                 throw new Error("Unsupported file type");
             }
             
-            // Apply character card data
             if (characterData) {
                 applyCharacterCard(characterData);
-                infoDiv.textContent = `Loaded: ${characterData.name || 'Unknown Character'}`;
-                infoDiv.className = "file-info loaded";
+                $infoDiv.text(`Loaded: ${characterData.name || 'Unknown Character'}`).addClass('loaded');
             }
             
         } catch (error) {
             console.error('Error loading character card:', error);
-            infoDiv.textContent = `Error: ${error.message}`;
-            infoDiv.className = "file-info error";
+            $infoDiv.text(`Error: ${error.message}`).addClass('error');
         }
     };
     
-    if (file.type.startsWith('image/')) {
-        reader.readAsDataURL(file);
-    } else {
-        reader.readAsText(file);
-    }
-});
+    file.type.startsWith('image/') ? reader.readAsDataURL(file) : reader.readAsText(file);
+}
 
 function extractTextChunksFromPNG(binaryData) {
     const chunks = {};
-    let offset = 8; // Skip PNG signature
+    let offset = 8;
     
     while (offset < binaryData.length) {
         const length = (binaryData.charCodeAt(offset) << 24) |
@@ -113,8 +112,7 @@ function extractTextChunksFromPNG(binaryData) {
             }
         }
         
-        offset += 12 + length; // 4 (length) + 4 (type) + length + 4 (CRC)
-        
+        offset += 12 + length;
         if (type === 'IEND') break;
     }
     
@@ -122,130 +120,71 @@ function extractTextChunksFromPNG(binaryData) {
 }
 
 function applyCharacterCard(characterData) {
-    // Apply system prompt from character card
-    if (characterData.system_prompt || characterData.description) {
-        const systemPrompt = characterData.system_prompt || characterData.description;
-        document.getElementById('systemPrompt').value = systemPrompt;
+    const systemPrompt = characterData.system_prompt || characterData.description;
+    if (systemPrompt) {
+        $('#systemPrompt').val(systemPrompt);
         conversationHistory[0].content = systemPrompt;
     }
     
-    // Apply character name to conversation history if available
     if (characterData.name) {
         console.log(`Loaded character: ${characterData.name}`);
     }
 }
 
-document.getElementById('readyButton').addEventListener('click', function () {
-    if (!isReady && myvad) {
-        isReady = true;
-        this.disabled = true;
-        this.textContent = "Starting...";
-        
-        // Switch to conversation tab
-        switchToConversationTab();
-        
-        // Start VAD
-        myvad.start();
-        
-        this.textContent = "Recording Active";
-    }
-});
-
 function switchToConversationTab() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    // Update active button
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    document.querySelector('[data-tab="conversation"]').classList.add('active');
-    
-    // Show conversation tab content
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-        if (content.id === 'conversation') {
-            content.classList.add('active');
-        }
+    $('.tab-button').removeClass('active');
+    $('[data-tab="conversation"]').addClass('active');
+    $('.tab-content').removeClass('active');
+    $('#conversation').addClass('active');
+}
+
+function setupTabNavigation() {
+    $('.tab-button').on('click', function() {
+        const tabId = $(this).data('tab');
+        $('.tab-button').removeClass('active');
+        $(this).addClass('active');
+        $('.tab-content').removeClass('active');
+        $(`#${tabId}`).addClass('active');
     });
 }
 
 async function main() {
     const isWebGPUSupported = await detectWebGPU();
-    const device = isWebGPUSupported ? "webgpu" : "wasm";
-    const dtype = isWebGPUSupported ? "fp32" : "q8";
     const options = {
-        device: device,
-        dtype: dtype,
+        device: isWebGPUSupported ? "webgpu" : "wasm",
+        dtype: isWebGPUSupported ? "fp32" : "q8",
         quantized: !isWebGPUSupported,
     };
 
     const transcriber = await pipeline('automatic-speech-recognition', 'onnx-community/moonshine-base-ONNX', options);
 
-    // Initialize VAD but don't start it yet
     myvad = await MicVAD.new({
-        onSpeechStart: () => {
-            console.log("Speech start detected")
-        },
+        onSpeechStart: () => console.log("Speech start detected"),
         onSpeechEnd: async (audio) => {
             const output = await transcriber(audio);
+            $('#transcriptionResult').text(output.text);
 
-            document.getElementById('transcriptionResult').innerText = output.text;
+            conversationHistory.push({ role: "user", content: output.text });
 
-            conversationHistory.push({
-                role: "user",
-                content: output.text
-            });
+            try {
+                const response = await $.ajax({
+                    url: $('#serverUrl').val(),
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ messages: conversationHistory })
+                });
 
-            const serverUrl = document.getElementById('serverUrl').value;
-            const response = await fetch(serverUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "messages": conversationHistory
-                })
-            });
-
-            const data = await response.json();
-            const response_text = data.choices[0].message.content;
-
-            document.getElementById('transcriptionResult').innerText = response_text;
-
-            conversationHistory.push({
-                role: "assistant",
-                content: response_text
-            });
-
-            textToSpeech(response_text, document.getElementById('voiceSelect').value);
+                const responseText = response.choices[0].message.content;
+                $('#transcriptionResult').text(responseText);
+                conversationHistory.push({ role: "assistant", content: responseText });
+                textToSpeech(responseText, $('#voiceSelect').val());
+                
+            } catch (error) {
+                console.error('Error calling chat API:', error);
+                $('#transcriptionResult').text('Error: Failed to get AI response');
+            }
         }
     });
     
-    // Enable the Ready button now that VAD is initialized
-    document.getElementById('readyButton').disabled = false;
+    $('#readyButton').prop('disabled', false);
 }
-
-function setupTabNavigation() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            
-            // Update active button
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Show selected tab content
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabId) {
-                    content.classList.add('active');
-                }
-            });
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', async function () {
-    main();
-    setupTabNavigation();
-})
