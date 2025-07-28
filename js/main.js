@@ -9,7 +9,6 @@ let myvad = null;
 let isReady = false;
 let webLLM = null;
 let webTokenizer = null;
-const llm_model_id = "HuggingFaceTB/SmolLM2-1.7B-Instruct";
 
 async function detectWebGPU() {
     try {
@@ -65,7 +64,7 @@ function setupTabNavigation() {
 async function loadWebLLM() {
     try {
         $('#transcriptionResult').text('Loading web-based LLM... This may take a moment.');
-        
+        const llm_model_id = "HuggingFaceTB/SmolLM2-1.7B-Instruct";
         webTokenizer = await AutoTokenizer.from_pretrained(llm_model_id);
         webLLM = await AutoModelForCausalLM.from_pretrained(llm_model_id, {
             dtype: "q4f16",

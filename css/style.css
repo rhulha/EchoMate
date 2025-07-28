@@ -232,7 +232,8 @@ textarea.setting-input { min-height: 150px; font-family: monospace; }
     font-size: 16px;
     transition: background-color 0.3s;
     color: #e0e0e0;
-    margin: 0;
+    margin: 0 5px;
+    border-radius: 5px 5px 0 0;
 }
 
 .tab-button:hover { background-color: #3a3a3a; }
