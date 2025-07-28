@@ -19,6 +19,8 @@ Speech2SpeechVAD is a web application that enables speech-to-speech conversation
 - [Moonshine](https://github.com/usefulsensors/moonshine) - Speech recognition
 - [Kokoro](https://github.com/hexgrad/kokoro) - Text-to-speech synthesis
 - [vad (ricky0123)](https://github.com/ricky0123/vad) - Browser VAD implementation
+- [Transformers.js](https://github.com/huggingface/transformers.js) - Machine learning library for running Transformers models in the browser
+- [SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) - Language model by Hugging Face for instruction-following tasks
 
 ## License
 [LICENSE](LICENSE) for Me and Kokoro.

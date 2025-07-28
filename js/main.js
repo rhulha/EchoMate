@@ -1,7 +1,7 @@
 import * as ort from "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"
 import { MicVAD, utils } from "./vad.js"
 import { textToSpeech } from "./tts.js";
-import { pipeline, AutoTokenizer, AutoModelForCausalLM, TextStreamer } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
+import { pipeline, AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
 import { characterCardHandler } from "./character-card.js";
 
 let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
@@ -83,20 +83,18 @@ async function generateWebLLMResponse(messages) {
     if (!webLLM || !webTokenizer) {
         throw new Error('Web LLM not loaded');
     }
-    
-    // Use the proper chat template method like in worker.js
     const inputs = webTokenizer.apply_chat_template(messages, {
         add_generation_prompt: true,
         return_dict: true,
     });
     
-    // Generate response
+    // https://www.reddit.com/r/LocalLLaMA/comments/1gjc6av/you_can_now_use_smollm217binstruct_in_your_browse/
     const { sequences } = await webLLM.generate({
         ...inputs,
         max_new_tokens: 150,
         do_sample: false,
         temperature: 0.7,
-        top_p: 0.9,
+        top_p: 0.8,
         return_dict_in_generate: true,
     });
     
