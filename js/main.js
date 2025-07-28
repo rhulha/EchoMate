@@ -1,12 +1,15 @@
 import * as ort from "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"
 import { MicVAD, utils } from "./vad.js"
 import { textToSpeech } from "./tts.js";
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
+import { pipeline, AutoTokenizer, AutoModelForCausalLM, TextStreamer } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
 import { characterCardHandler } from "./character-card.js";
 
 let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
 let myvad = null;
 let isReady = false;
+let webLLM = null;
+let webTokenizer = null;
+const llm_model_id = "HuggingFaceTB/SmolLM2-1.7B-Instruct";
 
 async function detectWebGPU() {
     try {
@@ -17,118 +20,36 @@ async function detectWebGPU() {
     }
 }
 
-// jQuery Document Ready
 $(document).ready(async function() {
     await main();
     setupEventHandlers();
     setupTabNavigation();
-    initializeCharacterCardHandler();
+    characterCardHandler.init(conversationHistory);
 });
 
 function setupEventHandlers() {
-    // System prompt change
     $('#systemPrompt').on('change', function() {
         conversationHistory[0].content = $(this).val() || "You are a helpful assistant.";
     });
 
-    // Ready button click
+    $('input[name="llmProvider"]').on('change', function() {
+        const isLocalhost = $(this).val() === 'localhost';
+        $('#serverUrlGroup').toggle(isLocalhost);
+        
+        if (!isLocalhost && !webLLM) {
+            loadWebLLM();
+        }
+    });
+
     $('#readyButton').on('click', function() {
         if (!isReady && myvad) {
             isReady = true;
             $(this).prop('disabled', true).text('Starting...');
-            switchToConversationTab();
+            $('[data-tab="conversation"]').click();
             myvad.start();
             $(this).text('Recording Active');
         }
     });
-}
-
-function initializeCharacterCardHandler() {
-    characterCardHandler.init((characterData) => {
-        if (characterData) {
-            // Update conversation history when character is loaded
-            const systemPrompt = characterData.system_prompt || characterData.description;
-            if (systemPrompt) {
-                conversationHistory[0].content = systemPrompt;
-            }
-            
-            // Display character avatar and name on conversation tab
-            displayCharacterInfo(characterData);
-            
-            console.log('Character card applied to conversation history');
-        } else {
-            // Clear character info when no character card is loaded
-            clearCharacterInfo();
-            // Reset system prompt to default
-            conversationHistory[0].content = "You are a helpful assistant.";
-            console.log('Character card cleared');
-        }
-    });
-}
-
-function displayCharacterInfo(characterData) {
-    const $characterInfo = $('#conversationCharacterInfo');
-    const $characterAvatar = $('#characterAvatar');
-    const $characterName = $('#characterName');
-    
-    // Clear previous content
-    $characterAvatar.attr('src', '').off('error load');
-    $characterName.text('');
-    
-    // Display character name if available
-    if (characterData.name) {
-        $characterName.text(characterData.name);
-    }
-    
-    // Display character avatar if available
-    if (characterData.avatar) {
-        $characterAvatar.attr('src', characterData.avatar);
-        $characterAvatar.on('error', function() {
-            // Hide the avatar if the image fails to load, but keep the character info if we have a name
-            $(this).hide();
-            if (!characterData.name) {
-                $characterInfo.hide();
-            }
-        });
-        $characterAvatar.on('load', function() {
-            // Show the avatar and character info when the image loads successfully
-            $(this).show();
-            $characterInfo.show();
-        });
-        
-        // Handle case where image is already cached and loads immediately
-        if ($characterAvatar[0].complete) {
-            $characterAvatar.show();
-            $characterInfo.show();
-        }
-    } else {
-        // Hide avatar if no avatar URL
-        $characterAvatar.hide();
-    }
-    
-    // Show character info if we have a name or avatar
-    if (characterData.name || characterData.avatar) {
-        $characterInfo.show();
-    } else {
-        $characterInfo.hide();
-    }
-}
-
-function clearCharacterInfo() {
-    const $characterInfo = $('#conversationCharacterInfo');
-    const $characterAvatar = $('#characterAvatar');
-    const $characterName = $('#characterName');
-    
-    $characterAvatar.attr('src', '').off('error load');
-    $characterName.text('');
-    $characterInfo.hide();
-}
-
-function switchToConversationTab() {
-    $('.tab-button').removeClass('active');
-    $('[data-tab="conversation"]').addClass('active');
-    $('.tab-content').removeClass('active');
-    $('#conversation').addClass('active');
 }
 
 function setupTabNavigation() {
@@ -139,6 +60,54 @@ function setupTabNavigation() {
         $('.tab-content').removeClass('active');
         $(`#${tabId}`).addClass('active');
     });
+}
+
+async function loadWebLLM() {
+    try {
+        $('#transcriptionResult').text('Loading web-based LLM... This may take a moment.');
+        
+        webTokenizer = await AutoTokenizer.from_pretrained(llm_model_id);
+        webLLM = await AutoModelForCausalLM.from_pretrained(llm_model_id, {
+            dtype: "q4f16",
+            device: "webgpu",
+        });
+        
+        $('#transcriptionResult').text('Web-based LLM loaded successfully!');
+        console.log('Web-based LLM loaded successfully');
+    } catch (error) {
+        console.error('Error loading web-based LLM:', error);
+        $('#transcriptionResult').text('Error loading web-based LLM. Please try localhost server instead.');
+    }
+}
+
+async function generateWebLLMResponse(messages) {
+    if (!webLLM || !webTokenizer) {
+        throw new Error('Web LLM not loaded');
+    }
+    
+    // Use the proper chat template method like in worker.js
+    const inputs = webTokenizer.apply_chat_template(messages, {
+        add_generation_prompt: true,
+        return_dict: true,
+    });
+    
+    // Generate response
+    const { sequences } = await webLLM.generate({
+        ...inputs,
+        max_new_tokens: 150,
+        do_sample: false,
+        temperature: 0.7,
+        top_p: 0.9,
+        return_dict_in_generate: true,
+    });
+    
+    // Decode only the new tokens (like in worker.js)
+    const decoded = webTokenizer.batch_decode(
+        sequences.slice(null, [inputs.input_ids.dims[1], null]),
+        { skip_special_tokens: true }
+    );
+    
+    return decoded[0].trim();
 }
 
 async function main() {
@@ -160,20 +129,29 @@ async function main() {
             conversationHistory.push({ role: "user", content: output.text });
 
             try {
-                const response = await $.ajax({
-                    url: $('#serverUrl').val(),
-                    method: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ messages: conversationHistory })
-                });
+                const isWebLLM = $('input[name="llmProvider"]:checked').val() === 'web';
+                let responseText;
+                
+                if (isWebLLM) {
+                    // Use web-based LLM
+                    responseText = await generateWebLLMResponse(conversationHistory);
+                } else {
+                    // Use localhost server
+                    const response = await $.ajax({
+                        url: $('#serverUrl').val(),
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ messages: conversationHistory })
+                    });
+                    responseText = response.choices[0].message.content;
+                }
 
-                const responseText = response.choices[0].message.content;
                 $('#transcriptionResult').text(responseText);
                 conversationHistory.push({ role: "assistant", content: responseText });
                 textToSpeech(responseText, $('#voiceSelect').val());
                 
             } catch (error) {
-                console.error('Error calling chat API:', error);
+                console.error('Error calling AI:', error);
                 $('#transcriptionResult').text('Error: Failed to get AI response');
             }
         }

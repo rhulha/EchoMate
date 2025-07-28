@@ -75,8 +75,33 @@ export class KokoroTTS {
 
     // Load voice style
     const data = await getVoiceData(voice);
-    const offset = num_tokens * STYLE_DIM;
+    
+    // Validate voice data
+    if (!data || data.length === 0) {
+      throw new Error(`Failed to load voice data for voice "${voice}". Voice data is empty.`);
+    }
+    
+    // Calculate the maximum number of styles available in the voice data
+    const maxStyles = Math.floor(data.length / STYLE_DIM);
+    if (maxStyles === 0) {
+      throw new Error(`Voice data for "${voice}" is too small. Expected at least ${STYLE_DIM} elements but got ${data.length}.`);
+    }
+    
+    // Calculate offset, but limit it to available styles
+    const requestedOffset = num_tokens * STYLE_DIM;
+    const maxOffset = (maxStyles - 1) * STYLE_DIM; // -1 because we need space for STYLE_DIM elements
+    const offset = Math.min(requestedOffset, maxOffset);
+    
+    if (requestedOffset > maxOffset) {
+      console.warn(`Requested offset (${requestedOffset}) exceeds maximum available offset (${maxOffset}). Using offset ${offset}. Voice has ${maxStyles} style(s), requested style ${num_tokens + 1}.`);
+    }
+    
     const voiceData = data.slice(offset, offset + STYLE_DIM);
+    
+    // Final validation of voice data size
+    if (voiceData.length !== STYLE_DIM) {
+      throw new Error(`Voice data size mismatch. Expected ${STYLE_DIM} elements but got ${voiceData.length}. Offset: ${offset}, Data length: ${data.length}`);
+    }
 
     // Prepare model inputs
     const inputs = {

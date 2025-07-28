@@ -51,6 +51,20 @@
                 <p>Configure your speech-to-speech settings below, then click "Ready to Start" when you're ready to begin the conversation.</p>
                 
                 <div class="setting-group">
+                    <label class="setting-label">LLM Provider:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="llmProvider" value="localhost" checked>
+                            Localhost Server
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="llmProvider" value="web">
+                            Web-based LLM (SmolLM2-1.7B-Instruct)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-group" id="serverUrlGroup">
                     <label class="setting-label" for="serverUrl">Chat Inference Server URL:</label>
                     <input type="text" id="serverUrl" class="setting-input"
                         value="http://localhost:8080/v1/chat/completions">

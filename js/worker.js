@@ -25,14 +25,17 @@ async function processQueue() {
     const { chunk, voice } = chunkQueue.shift();
     
     try {
-        console.log("Processing chunk", chunk);
+        console.log("Processing chunk:", chunk, "with voice:", voice);
         const audio = await tts.generate(chunk, { voice });
         let ab = audio.audio.buffer;
         console.log("generate done");
         self.postMessage({ status: "stream", audio: ab, text: chunk }, [ab]);
     } catch (error) {
         console.error("Error processing chunk:", error);
-        self.postMessage({ status: "error", error: error.message });
+        console.error("Chunk content:", chunk);
+        console.error("Voice:", voice);
+        console.error("Full error stack:", error.stack);
+        self.postMessage({ status: "error", error: error.message, chunk, voice });
     }
     
     isProcessing = false;
