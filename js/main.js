@@ -3,6 +3,7 @@ import { MicVAD, utils } from "./vad.js"
 import { textToSpeech } from "./tts.js";
 import { pipeline, AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/transformers.min.js";
 import { characterCardHandler } from "./character-card.js";
+import { characterTabHandler } from "./character-tab.js";
 
 let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
 let myvad = null;
@@ -23,7 +24,11 @@ $(document).ready(async function() {
     await main();
     setupEventHandlers();
     setupTabNavigation();
-    characterCardHandler.init(conversationHistory);
+    characterCardHandler.init(conversationHistory, (characterData) => {
+        // Callback when character is loaded - update character tab
+        characterTabHandler.updateFromCharacterCard(characterData);
+    });
+    characterTabHandler.init(conversationHistory);
 });
 
 function setupEventHandlers() {

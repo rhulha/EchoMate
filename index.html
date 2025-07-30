@@ -4,19 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech to Speech using Moonshine and Kokoro</title>
+    <title>EchoMate</title>
     <link id="favicon" rel="icon" href="./img/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./css/style.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
-    <h1>Speech to Speech using Moonshine and Kokoro</h1>
+    <h1>EchoMate</h1>
+    <h3>Speech to Speech using Moonshine and Kokoro</h3>
 
     <div class="tabs">
         <div class="tab-buttons">
             <button class="tab-button" data-tab="conversation">Conversation</button>
             <button class="tab-button active" data-tab="settings">Settings</button>
+            <button class="tab-button" data-tab="character">Character</button>
             <button class="tab-button" data-tab="credits">Credits</button>
         </div>
 
@@ -93,6 +95,67 @@
                 
                 <div class="setting-group">
                     <button id="readyButton" class="ready-button" disabled>Ready to Start</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="character" class="tab-content">
+            <div class="character-tab-container">
+                <h2>Character Information</h2>
+                <p>View and edit character details. Upload a character card in the Settings tab to populate these fields.</p>
+                
+                <div class="character-display">
+                    <div class="character-avatar-section">
+                        <img id="characterTabAvatar" class="character-tab-avatar" alt="Character Avatar" style="display: none;">
+                        <div class="avatar-placeholder" id="characterAvatarPlaceholder">No Avatar</div>
+                    </div>
+                    
+                    <div class="character-fields">
+                        <div class="character-field-group">
+                            <label class="character-field-label" for="characterTabName">Name:</label>
+                            <input type="text" id="characterTabName" class="character-field-input" placeholder="Character name">
+                        </div>
+                        
+                        <div class="character-field-group">
+                            <label class="character-field-label" for="characterTabPersonality">Personality:</label>
+                            <textarea id="characterTabPersonality" class="character-field-input character-textarea" placeholder="Character personality traits"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabDescription">Description:</label>
+                        <textarea id="characterTabDescription" class="character-field-input character-textarea" placeholder="Character description"></textarea>
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabFirstMessage">First Message:</label>
+                        <textarea id="characterTabFirstMessage" class="character-field-input character-textarea" placeholder="Character's opening message"></textarea>
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabScenario">Scenario:</label>
+                        <textarea id="characterTabScenario" class="character-field-input character-textarea" placeholder="Setting or scenario description"></textarea>
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabSystemPrompt">System Prompt:</label>
+                        <textarea id="characterTabSystemPrompt" class="character-field-input character-textarea" placeholder="System prompt for the AI"></textarea>
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabCreator">Creator:</label>
+                        <input type="text" id="characterTabCreator" class="character-field-input" placeholder="Character creator">
+                    </div>
+                    
+                    <div class="character-field-group full-width">
+                        <label class="character-field-label" for="characterTabTags">Tags:</label>
+                        <input type="text" id="characterTabTags" class="character-field-input" placeholder="Tags (comma-separated)">
+                    </div>
+                </div>
+                
+                <div class="character-actions">
+                    <button id="applyCharacterChanges" class="apply-button">Apply Changes</button>
+                    <button id="clearCharacterFields" class="clear-button">Clear All Fields</button>
                 </div>
             </div>
         </div>
