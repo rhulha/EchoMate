@@ -460,6 +460,13 @@ textarea.setting-input { min-height: 150px; font-family: monospace; }
     resize: vertical;
 }
 
+/* Specific height adjustments for larger text areas */
+#characterTabDescription,
+#characterTabFirstMessage,
+#characterTabSystemPrompt {
+    min-height: 250px;
+}
+
 .character-actions {
     display: flex;
     gap: 10px;
