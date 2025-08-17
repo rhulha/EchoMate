@@ -8,7 +8,7 @@ There are two versions of this app.
 One is pure client side but you need a PC with a very good graphics card and a browser that supports WebGPU.
 The other does most of the work on the server side using Python so that you can use a very simple browser like on a mobile phone.
 
-[pure client side version](https://github.com/rhulha/EchoMate)
+[pure client side version](https://github.com/rhulha/EchoMate)  
 [server side version](https://github.com/rhulha/EchoMate_ServerSide)
 
 This project is the pure client side version.
