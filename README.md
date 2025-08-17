@@ -1,6 +1,6 @@
-# Speech2SpeechVAD
+# EchoMate
 
-Speech2SpeechVAD is a web application that enables speech-to-speech conversations using Moonshine for speech recognition, Kokoro for text-to-speech synthesis, and Silero-VAD for voice activity detection. The app features a tabbed interface for conversation, settings, and credits.
+EchoMate is a web application that enables speech-to-speech conversations using Moonshine for speech recognition, Kokoro for text-to-speech synthesis, and Silero-VAD for voice activity detection. The app features a tabbed interface for conversation, settings, and credits.
 
 ## Warning
 - This project it pure client side and depends heavily on WebGPU support in the browser and is only tested with Chrome !!!!!
