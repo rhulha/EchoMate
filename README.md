@@ -2,6 +2,10 @@
 
 Speech2SpeechVAD is a web application that enables speech-to-speech conversations using Moonshine for speech recognition, Kokoro for text-to-speech synthesis, and Silero-VAD for voice activity detection. The app features a tabbed interface for conversation, settings, and credits.
 
+## Warning
+- This project it pure client side and depends heavily on WebGPU support in the browser and is only tested with Chrome !!!!!
+- Optionally you can use a local LLM server like llama.cpp in the settings.
+
 ## Features
 - Real-time voice activity detection (VAD)
 - Speech-to-text (STT) using Moonshine
@@ -16,9 +20,9 @@ Speech2SpeechVAD is a web application that enables speech-to-speech conversation
 
 ## Credits
 - [Silero-VAD](https://github.com/snakers4/silero-vad) - Voice activity detection
+- [vad (ricky0123)](https://github.com/ricky0123/vad) - Browser VAD implementation
 - [Moonshine](https://github.com/usefulsensors/moonshine) - Speech recognition
 - [Kokoro](https://github.com/hexgrad/kokoro) - Text-to-speech synthesis
-- [vad (ricky0123)](https://github.com/ricky0123/vad) - Browser VAD implementation
 - [Transformers.js](https://github.com/huggingface/transformers.js) - Machine learning library for running Transformers models in the browser
 - [SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) - Language model by Hugging Face for instruction-following tasks
 
