@@ -4,6 +4,8 @@ EchoMate is a web application that enables speech-to-speech conversations using 
 
 ## Warning
 - This project it pure client side and depends heavily on WebGPU support in the browser and is only tested with Chrome !!!!!
+- I also have a version that does everything on the server side (Python) except for VAD here:
+- [EchoMate_ServerSide](https://github.com/rhulha/EchoMate_ServerSide)
 - Optionally you can use a local LLM server like llama.cpp in the settings.
 
 ## Features
